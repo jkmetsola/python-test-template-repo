@@ -1,0 +1,15 @@
+{
+	"name": "Dev Environment - HSL Open API demo",
+	"build": {
+		"dockerfile": "${localWorkspaceFolder}/Dockerfile",
+		"context": "${localWorkspaceFolder}"
+	},
+	"workspaceFolder": "/dev-env",
+	"mounts": [
+		"source=${localWorkspaceFolder},target=/dev-env,type=bind",
+		"source=${localWorkspaceFolder}/.vscode-server,target=/root/.vscode-server,type=bind"
+	],
+	"updateRemoteUserUID": true,
+	"containerUser": "user",
+	"onCreateCommand": "./customize-dev-env.sh"
+}
