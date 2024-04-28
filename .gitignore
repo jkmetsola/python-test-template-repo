@@ -160,3 +160,7 @@ cython_debug/
 #.idea/
 
 .vscode-server/*
+log.html
+output.xml
+report.html
+.vscode/settings.json
