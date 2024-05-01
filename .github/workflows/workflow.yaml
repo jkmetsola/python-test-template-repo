@@ -1,0 +1,66 @@
+name: Build image and execute CI tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-main:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Build ${{ env.DOCKER_IMAGE_MAIN_STAGE }}
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: false
+        tags: ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_MAIN_STAGE }}
+        target: ${{ env.DOCKER_IMAGE_MAIN_STAGE }}
+        load: true
+    - name: Build ${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }}
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: false
+        tags: ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }}
+        target: ${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }}
+        load: true
+  test-ci:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Run CI tests
+      run: |
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_MAIN_STAGE }} ./execute_tests.py robot-test
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_MAIN_STAGE }} ./execute_tests.py pytest-test
+  test-linters:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Run linters
+      run: |
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }} robotidy --diff --check hsl-api/tests/robot
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }} robocop hsl-api/tests/robot
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }} ruff check --exclude .vscode-server
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }} ruff format --exclude .vscode-server --diff
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }} shellcheck ./*.sh
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }} hadolint Dockerfile
+  test-dependencies:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+      continue-on-error: true
+    - name: Run dependency checks
+      run: |
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }} 'pip-compile requirements.in && if [ -n "$(git diff requirements.txt)" ]; then exit 1; fi'
+        docker run --rm ${{ env.DOCKER_IMAGE_REPOSITORY }}:${{ env.DOCKER_IMAGE_DEV_TESTS_STAGE }} 'pip-compile requirements-dev.in && if [ -n "$(git diff requirements-dev.txt)" ]; then exit 1; fi'

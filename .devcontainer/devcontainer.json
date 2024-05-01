@@ -7,9 +7,14 @@
 	"workspaceFolder": "/dev-env",
 	"mounts": [
 		"source=${localWorkspaceFolder},target=/dev-env,type=bind",
-		"source=${localWorkspaceFolder}/.vscode-server,target=/root/.vscode-server,type=bind"
+		"source=${localWorkspaceFolder}/.vscode-server,target=/root/.vscode-server,type=bind",
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
 	],
 	"updateRemoteUserUID": true,
 	"containerUser": "user",
-	"onCreateCommand": "./customize-dev-env.sh"
+	"onCreateCommand": "./customize-dev-env.sh",
+	"postAttachCommand": {
+		"command1": "pip-compile --no-strip-extras requirements.in > /dev/null 2>&1",
+		"command2": "pip-compile --no-strip-extras requirements-dev.in > /dev/null 2>&1"
+	}
 }
