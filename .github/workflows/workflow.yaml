@@ -1,0 +1,63 @@
+name: Build image and execute CI tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name : Docker build and save images
+      run : |
+        docker build -t ${{ vars.DOCKER_IMAGE_REPOSITORY }}:${{ vars.DOCKER_IMAGE_MAIN_STAGE }} --target ${{ vars.DOCKER_IMAGE_MAIN_STAGE }} . 
+        docker build -t ${{ vars.DOCKER_IMAGE_REPOSITORY }}:${{ vars.DOCKER_IMAGE_DEV_TESTS_STAGE }} --target ${{ vars.DOCKER_IMAGE_DEV_TESTS_STAGE }} .
+        docker save ${{ vars.DOCKER_IMAGE_REPOSITORY }}:${{ vars.DOCKER_IMAGE_MAIN_STAGE }} > artifacts/${{ vars.DOCKER_IMAGE_MAIN_STAGE }}
+        docker save ${{ vars.DOCKER_IMAGE_REPOSITORY }}:${{ vars.DOCKER_IMAGE_DEV_TESTS_STAGE }} > artifacts/${{ vars.DOCKER_IMAGE_DEV_TESTS_STAGE }}
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: built-images
+        path: artifacts
+
+  test-ci:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run CI Tests
+      uses: ./.github/workflows/execute-with-docker-image.yaml
+      with:
+        artifact-name: ${{ vars.DOCKER_IMAGE_MAIN_STAGE }}
+        command: > 
+          ./execute_tests.py ci-test && 
+          ./execute_tests.py pytest-test
+  test-linters:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run Dev Tests
+      uses: ./.github/workflows/execute-with-docker-image.yaml
+      with:
+        artifact-name: ${{ vars.DOCKER_IMAGE_DEV_TESTS_STAGE }}
+        command: >
+          robotidy --diff --check hsl-api/tests/robot &&
+          robocop hsl-api/tests/robot &&
+          ruff check --exclude .vscode-server &&
+          ruff format --exclude .vscode-server --diff &&
+          shellcheck ./*.sh &&
+          hadolint Dockerfile
+  test-dependencies:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Run Dependency Tests
+      uses: ./.github/workflows/execute-with-docker-image.yaml
+      continue-on-error: true
+      with:
+        artifact-name: ${{ vars.DOCKER_IMAGE_DEV_TESTS_STAGE }}
+        command: >
+          pip-compile requirements.in && if [ -n "$(git diff requirements.txt)" ]; then exit 1; fi;
+          pip-compile requirements-dev.in && if [ -n "$(git diff requirements-dev.txt)" ]; then exit 1; fi;

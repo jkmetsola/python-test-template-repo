@@ -1,0 +1,26 @@
+name: load-docker-image
+
+on:
+  workflow_call:
+    inputs:
+      artifact-name:
+        required: true
+        type: string
+      command:
+        required: true
+        type: string
+
+jobs:
+  use_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: built-images
+      - name: Load Image
+        run: docker load -i ${{ inputs.artifact-name }}.tar
+      - name: Run command with Image
+        run: docker run --rm ${{ vars.DOCKER_IMAGE_REPOSITORY }}:${{ inputs.artifact-name }} ${{ inputs.command }}
