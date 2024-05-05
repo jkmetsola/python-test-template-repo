@@ -62,10 +62,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run ci tests
-        run: |
-          ./execute_tests.py robot-tests
-          ./execute_tests.py pytest-tests
+      - run: ./execute_tests.py robot-tests
+      - run: ./execute_tests.py pytest-tests
+
 
   dev-tests:
     needs: build-and-push-dev-test-docker-image
@@ -78,15 +77,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run linters
-        run: |
-          robotidy --diff --check hsl-api/tests/robot
-          robocop hsl-api/tests/robot
-          ruff check --no-cache --exclude .vscode-server
-          ruff format --no-cache --exclude .vscode-server --diff
-          shellcheck ./*.sh
-          hadolint Dockerfile
+      - run: robotidy --diff --check hsl-api/tests/robot
+      - run: robocop hsl-api/tests/robot
+      - run: ruff check --no-cache --exclude .vscode-server
+      - run: ruff format --no-cache --exclude .vscode-server --diff
+      - run: shellcheck ./*.sh
+      - run: hadolint Dockerfile
+      - run: |
           pip-compile -o requirements_new.txt requirements.in > /dev/null 2>&1
           diff --brief <(grep -v '#' requirements.txt) <(grep -v '#' requirements_new.txt)
+      - run: |
           pip-compile -o requirements-dev_new.txt requirements-dev.in > /dev/null 2>&1
           diff --brief <(grep -v '#' requirements-dev.txt) <(grep -v '#' requirements-dev_new.txt)
