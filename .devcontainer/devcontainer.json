@@ -16,8 +16,8 @@
 	"containerUser": "devroot",
 	"onCreateCommand": "./customize-dev-env.sh",
 	"postAttachCommand": {
-		"command1": "pip-compile --no-strip-extras requirements.in > /dev/null 2>&1",
-		"command2": "pip-compile --no-strip-extras requirements-dev.in > /dev/null 2>&1"
+		"command1": "pip-compile -U --no-strip-extras requirements.in > /dev/null 2>&1",
+		"command2": "pip-compile -U --no-strip-extras requirements-dev.in > /dev/null 2>&1"
 	},
 	"customizations": {
 		"vscode": {
