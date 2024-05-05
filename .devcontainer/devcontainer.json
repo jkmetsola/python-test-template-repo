@@ -2,7 +2,12 @@
 	"name": "Dev Environment - HSL Open API demo",
 	"build": {
 		"dockerfile": "${localWorkspaceFolder}/Dockerfile",
-		"context": "${localWorkspaceFolder}"
+		"context": "${localWorkspaceFolder}",
+		"args": {
+			"HOST_DOCKER_GID": "999", // Obtain with 'getent group docker | cut -d: -f3'
+			"HOST_UID": "1000", // Obtain with 'id -u'
+			"HOST_GID": "1003" // Obtain with 'id -g'
+		}
 	},
 	"workspaceFolder": "/dev-env",
 	"mounts": [
