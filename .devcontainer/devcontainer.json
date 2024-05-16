@@ -1,25 +1,26 @@
 {
-	"name": "Dev Environment - HSL Open API demo",
+	"name": "Dev Environment",
 	"build": {
 		"dockerfile": "${localWorkspaceFolder}/Dockerfile",
 		"context": "${localWorkspaceFolder}",
 		"args": {
 			"HOST_DOCKER_GID": "999", // Obtain with 'getent group docker | cut -d: -f3'
 			"HOST_UID": "1000", // Obtain with 'id -u'
-			"HOST_GID": "1003" // Obtain with 'id -g'
+			"HOST_GID": "1000" // Obtain with 'id -g'
 		}
 	},
-	"workspaceFolder": "/dev-env",
+	"workspaceFolder": "/dev-env/${localWorkspaceFolderBasename}",
 	"mounts": [
-		"source=${localWorkspaceFolder},target=/dev-env,type=bind",
+		"source=${localWorkspaceFolder},target=/dev-env/${localWorkspaceFolderBasename},type=bind",
 		"source=${localWorkspaceFolder}/.vscode-server,target=/root/.vscode-server,type=bind",
 		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
 		"source=/home/${localEnv:USER}/.ssh,target=/home/devroot/.ssh,type=bind"
 	],
 	"updateRemoteUserUID": false,
 	"remoteUser": "devroot",
+	"initializeCommand": "./.devcontainer/initscript.sh",
 	"containerUser": "devroot",
-	"onCreateCommand": "./customize-dev-env.sh",
+	"onCreateCommand": "./.devcontainer/customize-dev-env.sh",
 	"postAttachCommand": {
 		"command1": "pip-compile -U --no-strip-extras requirements.in > /dev/null 2>&1",
 		"command2": "pip-compile -U --no-strip-extras requirements-dev.in > /dev/null 2>&1"
@@ -27,18 +28,12 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"ms-azuretools.vscode-docker",
 				"charliermarsh.ruff",
 				"christian-kohler.path-intellisense",
 				"codezombiech.gitignore",
-				"donjayamanne.githistory",
 				"eamodio.gitlens",
-				//"Gruntfuggly.todo-tree",
 				"ms-python.python",
 				"ms-python.vscode-pylance",
-				//"ms-vscode.cmake-tools",
-				//"ms-vscode.cpptools",
-				//"twxs.cmake",
 				//"NicolasVuillamy.vscode-groovy-lint",
 				//"SonarSource.sonarlint-vscode",
 				"timonwong.shellcheck",
@@ -46,7 +41,7 @@
 				"ms-azuretools.vscode-docker",
 				//"ms-kubernetes-tools.vscode-kubernetes-tools",
 				"redhat.vscode-yaml",
-				"robocorp.robotframework-lsp",
+				//"robocorp.robotframework-lsp",
 				"GitHub.copilot",
 				"GitHub.copilot-chat"
 			]

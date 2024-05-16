@@ -7,7 +7,7 @@ set -u
 printf '
 parse_git_branch() {
   if [ -n "$(git rev-parse --git-dir 2> /dev/null)" ]; then
-    echo "($(git rev-parse --abbrev-ref HEAD)) " 
+    echo "($(git rev-parse --abbrev-ref HEAD)) "
   fi
 }
 

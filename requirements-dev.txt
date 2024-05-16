@@ -4,53 +4,5 @@
 #
 #    pip-compile requirements-dev.in
 #
-click==8.1.7
-    # via
-    #   rich-click
-    #   robotframework-tidy
-colorama==0.4.6
-    # via robotframework-tidy
-jinja2==3.1.3
-    # via
-    #   robotframework-robocop
-    #   robotframework-tidy
-markdown-it-py==3.0.0
-    # via rich
-markupsafe==2.1.5
-    # via jinja2
-mdurl==0.1.2
-    # via markdown-it-py
-pathspec==0.12.1
-    # via
-    #   robotframework-robocop
-    #   robotframework-tidy
-platformdirs==4.2.1
-    # via robotframework-robocop
-pygments==2.18.0
-    # via rich
-python-dateutil==2.9.0.post0
-    # via robotframework-robocop
-pytz==2024.1
-    # via robotframework-robocop
-rich==13.7.1
-    # via rich-click
-rich-click==1.7.4
-    # via robotframework-tidy
-robotframework==7.0
-    # via
-    #   robotframework-robocop
-    #   robotframework-tidy
-robotframework-robocop==5.0.4
+ruff==0.4.4
     # via -r requirements-dev.in
-robotframework-tidy==4.11.0
-    # via -r requirements-dev.in
-ruff==0.4.3
-    # via -r requirements-dev.in
-six==1.16.0
-    # via python-dateutil
-tomli==2.0.1
-    # via
-    #   robotframework-robocop
-    #   robotframework-tidy
-typing-extensions==4.11.0
-    # via rich-click
