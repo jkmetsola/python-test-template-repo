@@ -56,6 +56,25 @@
                 "robot-tests"
             ],
             "program": "execute_tests.py"
+        },
+        {
+            "name": "Configure Devcontainer",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/.devcontainer/configure_devcontainer_json.py",
+            "args": [
+                "--host-docker-gid",
+                "1000",
+                "--host-uid",
+                "1001",
+                "--host-gid",
+                "1002",
+                "--build-arg-output-file",
+                "${workspaceFolder}/build_args.txt",
+                "--build-env-output-file",
+                "${workspaceFolder}/build_env.txt"
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }
