@@ -16,7 +16,6 @@
     "workspaceFolder": "/dev-env/${localWorkspaceFolderBasename}",
     "mounts": [
         "source=${localWorkspaceFolder},target=/dev-env/${localWorkspaceFolderBasename},type=bind",
-        "source=${localWorkspaceFolder}/.vscode-server,target=/root/.vscode-server,type=bind",
         "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind",
         "source=/home/${localEnv:USER}/.ssh,target=/home/devroot/.ssh,type=bind"
     ],
