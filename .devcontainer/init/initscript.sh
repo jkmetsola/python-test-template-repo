@@ -38,9 +38,10 @@ else
   source "$WORKSPACE_FOLDER"/.devcontainer/setupEnv.sh "true"
 fi
 set -x
-result=$(eval "$(xargs -a "${TEMP_BUILDARG_FILE}" -I {} echo docker build --quiet {} -t dev-env-test "$WORKSPACE_FOLDER")" ||:)
+test_devenv_build_cmd="$(xargs -a "${TEMP_BUILDARG_FILE}" -I {} echo docker build {} -t dev-env-test "$WORKSPACE_FOLDER")"
 set +x
-if [ -z "${result}" ]; then
+if ! eval "$test_devenv_build_cmd" ; then
   echo "Updating linux package versions to files..."
   update_linux_package_versions
 fi
+echo "Initialisation complete."
