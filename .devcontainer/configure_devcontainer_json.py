@@ -1,22 +1,31 @@
 #!/usr/bin/env python3
-"""Simple script to update the devcontainer.json file"""
+"""Simple script to update the devcontainer.json file."""
 
-import json
 import argparse
-import os
+import json
+import logging
 import sys
 from copy import deepcopy
+from pathlib import Path
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+)
+logger = logging.getLogger(__name__)
 
 
 class ConfiguredevEnv:
-    """Tool to update the devcontainer.json file"""
+    """Tool to update the devcontainer.json file."""
 
     def __init__(self) -> None:
-        self.devcontainer_json_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
+        """Get data from devcontainer.json file."""
+        self.devcontainer_json_path = Path.joinpath(
+            Path(__file__).parent,
             "devcontainer.json",
         )
-        with open(self.devcontainer_json_path, "r", encoding="utf-8") as file:
+        with self.devcontainer_json_path.open(encoding="utf-8") as file:
             self.devcontainer_json_data = json.load(file)
         self.devcontainer_json_data_copy = deepcopy(self.devcontainer_json_data)
         self.build_arguments = [
@@ -25,10 +34,10 @@ class ConfiguredevEnv:
         ]
 
     @staticmethod
-    def parse_args():
+    def parse_args() -> argparse.Namespace:
         """Parse args from the command line."""
         parser = argparse.ArgumentParser(
-            description="Update the devcontainer.json file"
+            description="Update the devcontainer.json file.",
         )
 
         parser.add_argument("--host-docker-gid", type=int, help="Host Docker Group ID")
@@ -37,35 +46,43 @@ class ConfiguredevEnv:
         parser.add_argument("--build-arg-output-file", type=str)
         parser.add_argument("--build-env-output-file", type=str)
         parser.add_argument(
-            "--modify-devcontainer-json", type=str, choices=["true", "false"]
+            "--modify-devcontainer-json",
+            type=str,
+            choices=["true", "false"],
         )
 
         return parser.parse_args()
 
-    def configure_dev_env(self, host_docker_gid, host_uid, host_gid):
-        """Main function"""
-
-        self.devcontainer_json_data["build"]["args"]["HOST_DOCKER_GID"] = str(
+    def configure_dev_env(
+        self,
+        host_docker_gid: str,
+        host_uid: str,
+        host_gid: str,
+    ) -> None:
+        """Update the devcontainer.json file."""
+        self.devcontainer_json_data["build"]["args"]["HOST_DOCKER_GID"] = (
             host_docker_gid
         )
-        self.devcontainer_json_data["build"]["args"]["HOST_UID"] = str(host_uid)
-        self.devcontainer_json_data["build"]["args"]["HOST_GID"] = str(host_gid)
+        self.devcontainer_json_data["build"]["args"]["HOST_UID"] = host_uid
+        self.devcontainer_json_data["build"]["args"]["HOST_GID"] = host_gid
 
-        with open(self.devcontainer_json_path, "w", encoding="utf-8") as file:
+        with Path.open(self.devcontainer_json_path, "w", encoding="utf-8") as file:
             json.dump(self.devcontainer_json_data, file, indent=4)
 
         if self.devcontainer_json_data != self.devcontainer_json_data_copy:
-            print(".devcontainer/devcontainer.json updated. Restart the container.")
+            logger.warning(
+                ".devcontainer/devcontainer.json updated. Restart the container.",
+            )
             sys.exit(1)
 
-    def create_buildargs_file(self, build_arg_output_file):
-        """Function to create the buildargs file."""
-        with open(build_arg_output_file, "w", encoding="utf-8") as file:
+    def create_buildargs_file(self, build_arg_output_file: str) -> None:
+        """Create the buildargs file."""
+        with Path(build_arg_output_file).open("w", encoding="utf-8") as file:
             file.write("--build-arg" + " " + " --build-arg ".join(self.build_arguments))
 
-    def create_buildenv_file(self, build_env_output_file):
-        """Function to create the buildenv file."""
-        with open(build_env_output_file, "w", encoding="utf-8") as file:
+    def create_buildenv_file(self, build_env_output_file: str) -> None:
+        """Create the 'build-environment' file."""
+        with Path(build_env_output_file).open("w", encoding="utf-8") as file:
             file.write("\n".join(self.build_arguments))
 
 
@@ -74,7 +91,9 @@ if __name__ == "__main__":
     envconfigurer = ConfiguredevEnv()
     if args.modify_devcontainer_json == "true":
         envconfigurer.configure_dev_env(
-            args.host_docker_gid, args.host_uid, args.host_gid
+            args.host_docker_gid,
+            args.host_uid,
+            args.host_gid,
         )
     envconfigurer.create_buildargs_file(args.build_arg_output_file)
     envconfigurer.create_buildenv_file(args.build_env_output_file)
